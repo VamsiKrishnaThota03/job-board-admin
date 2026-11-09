@@ -1,12 +1,15 @@
 {
-  "name": "cybermind",
+  "name": "job-management",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "description": "Job board: Next.js + Mantine frontend and NestJS + PostgreSQL API",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "test": "npm --prefix backend test && npm --prefix backend run test:e2e",
+    "lint": "npm --prefix frontend run lint"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "license": "ISC"
 }
