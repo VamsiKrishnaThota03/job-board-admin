@@ -7,7 +7,10 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
+  HttpCode,
 } from '@nestjs/common';
+import { AdminKeyGuard } from '../common/admin-key.guard';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
@@ -17,6 +20,7 @@ export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
   @Post()
+  @UseGuards(AdminKeyGuard)
   create(@Body() createJobDto: CreateJobDto) {
     return this.jobsService.create(createJobDto);
   }
@@ -32,6 +36,7 @@ export class JobsController {
   }
 
   @Patch(':id')
+  @UseGuards(AdminKeyGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateJobDto: UpdateJobDto,
@@ -40,7 +45,9 @@ export class JobsController {
   }
 
   @Delete(':id')
+  @UseGuards(AdminKeyGuard)
+  @HttpCode(204)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.jobsService.remove(id);
   }
-} 
+}

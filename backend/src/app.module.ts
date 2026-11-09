@@ -1,24 +1,19 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JobsModule } from './jobs/jobs.module';
-import { Job } from './jobs/entities/job.entity';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { databaseConfig } from './config/database.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [Job],
-      synchronize: true, // Set to false in production
-      ssl: {
-        rejectUnauthorized: false // Required for Neon DB connection
-      },
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    // forRootAsync so that .env has been loaded by ConfigModule before we read it
+    TypeOrmModule.forRootAsync({ useFactory: () => databaseConfig() }),
     JobsModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
