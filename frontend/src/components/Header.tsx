@@ -1,72 +1,43 @@
 'use client';
 
-import { Group, Button } from '@mantine/core';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Button } from '@mantine/core';
+import { IconPlus } from '@tabler/icons-react';
 
 export function Header() {
   return (
-    <div className="w-full pt-[21px] flex justify-center">
-      <div style={{ 
-        width: '890px',
-        height: '80px',
-        borderRadius: '122px',
-        border: '1px solid #FCFCFC',
-        display: 'flex',
-        alignItems: 'center',
-        background: 'white',
-        padding: '0 26px',
-        position: 'relative',
-        boxShadow: '0px 4px 50px 0px rgba(0, 0, 0, 0.05)'
-      }}>
-        <div style={{
-          width: '838px',
-          height: '48px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <Group gap={26}>
-            <div style={{
-              width: '44px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Image
-                src="/images/logo.png"
-                alt="Logo"
-                width={44}
-                height={44}
-              />
-            </div>
-            <Group gap={48}>
-              <Link href="/" style={{ color: '#111827', textDecoration: 'none', fontSize: '16px' }}>Home</Link>
-              <Link href="/" style={{ color: '#111827', textDecoration: 'none', fontSize: '16px' }}>Find Jobs</Link>
-              <Link href="/" style={{ color: '#111827', textDecoration: 'none', fontSize: '16px' }}>Find Talents</Link>
-              <Link href="/" style={{ color: '#111827', textDecoration: 'none', fontSize: '16px' }}>About us</Link>
-              <Link href="/" style={{ color: '#111827', textDecoration: 'none', fontSize: '16px' }}>Testimonials</Link>
-            </Group>
-          </Group>
-          <Link href="/?create=true" style={{ textDecoration: 'none' }}>
-            <Button
-              size="md"
-              style={{
-                backgroundColor: '#9333EA',
-                color: 'white',
-                height: '48px',
-                padding: '0 24px',
-                fontSize: '16px',
-                borderRadius: '24px',
-                fontWeight: 500
-              }}
-            >
-              Create Jobs
-            </Button>
+    <header className="flex w-full justify-center px-4 pt-5">
+      <nav
+        aria-label="Main"
+        className="flex h-16 w-full max-w-4xl items-center justify-between rounded-full border border-gray-100 bg-white pl-4 pr-2 shadow-[0_4px_50px_rgba(0,0,0,0.05)] sm:h-20 sm:pl-6 sm:pr-3"
+      >
+        <Link href="/" className="flex items-center gap-3 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+          <Image src="/images/logo.png" alt="" width={40} height={42} priority />
+          <span className="text-lg font-semibold tracking-tight text-gray-900">JobBoard</span>
+        </Link>
+        <div className="flex items-center gap-2 sm:gap-6">
+          <Link
+            href="/"
+            className="hidden rounded-md px-2 py-1 text-[15px] font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 sm:inline"
+          >
+            Find Jobs
           </Link>
+          <Button
+            component={Link}
+            href="/?create=true"
+            scroll={false}
+            radius="xl"
+            size="md"
+            color="violet"
+            leftSection={<IconPlus size={18} />}
+            className="font-medium"
+          >
+            <span className="hidden sm:inline">Create Job</span>
+            <span className="sm:hidden">Post</span>
+          </Button>
         </div>
-      </div>
-    </div>
+      </nav>
+    </header>
   );
-} 
+}

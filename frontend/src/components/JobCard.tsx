@@ -1,117 +1,62 @@
 'use client';
 
-import { Paper, Text, Button, Badge, Group, Stack, Image } from '@mantine/core';
-import { IconBriefcase, IconMapPin, IconCurrencyRupee } from '@tabler/icons-react';
+import { Badge, Button } from '@mantine/core';
+import { IconBriefcase, IconBuilding, IconCurrencyRupee, IconMapPin } from '@tabler/icons-react';
 import { Job } from '@/types/job';
+import { timeAgo } from '@/lib/format';
+import { CompanyLogo } from './CompanyLogo';
 
 interface JobCardProps {
   job: Job;
-  onApply: (jobId: number) => void;
+  onOpen: (job: Job) => void;
 }
 
-export function JobCard({ job, onApply }: JobCardProps) {
-  // Split description into bullet points (max 2)
-  const descriptionPoints = job.description?.split('.').filter(point => point.trim()) || [];
-  const displayPoints = descriptionPoints.slice(0, 2).map(point => point.trim() + '.');
+export function JobCard({ job, onOpen }: JobCardProps) {
+  const points = job.description
+    .split(/(?<=[.!?])\s+/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .slice(0, 2);
 
   return (
-    <Paper 
-      shadow="sm" 
-      radius={12} 
-      p="md" 
-      withBorder
-      style={{
-        width: '298px',
-        height: '320px',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
-      <Stack gap="xs" style={{ flex: 1 }}>
-        {/* Top Row with Logo and Time Badge */}
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
-          {/* Company Logo */}
-          <div style={{ 
-            width: '83.46px', 
-            height: '82px',
-            borderRadius: '13.18px',
-            border: '1px solid #E5E7EB',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '8px'
-          }}>
-            <Image
-              src={job.companyLogo}
-              alt={job.companyName}
-              style={{ 
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain'
-              }}
-              fallbackSrc={`https://ui-avatars.com/api/?name=${job.companyName}&background=random&size=82`}
-            />
-          </div>
+    <article className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_0_14px_rgba(211,211,211,0.15)] transition hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="mb-4 flex items-start justify-between">
+        <CompanyLogo name={job.companyName} />
+        <Badge radius="md" size="md" variant="light" color="blue" tt="none">
+          {job.isSample ? 'Sample' : timeAgo(job.createdAt)}
+        </Badge>
+      </div>
 
-          {/* Posted Time Badge */}
-          <Badge style={{ backgroundColor: '#B0D9FF' }} variant="light" size="sm">
-            {job.postedTime || 'New'}
-          </Badge>
-        </Group>
+      <h3 className="text-[17px] font-bold leading-snug text-gray-900">{job.title}</h3>
+      <p className="mb-3 text-sm text-gray-500">
+        {job.companyName} · {job.location}
+      </p>
 
-        {/* Job Title */}
-        <Text size="sm" fw={600} c="#111827">
-          {job.title}
-        </Text>
+      <ul className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] font-medium text-gray-600">
+        <li className="flex items-center gap-1">
+          <IconBriefcase size={15} aria-hidden="true" /> {job.experience || 'Any experience'}
+        </li>
+        <li className="flex items-center gap-1">
+          {job.workMode === 'Remote' ? <IconMapPin size={15} aria-hidden="true" /> : <IconBuilding size={15} aria-hidden="true" />}
+          {job.workMode}
+        </li>
+        <li className="flex items-center gap-1">
+          <IconCurrencyRupee size={15} aria-hidden="true" /> {job.salary || job.salaryRange}
+        </li>
+      </ul>
 
-        {/* Job Details */}
-        <Group gap="sm">
-          <Group gap="xs">
-            <IconBriefcase size={14} color="#4B5563" />
-            <Text size="xs" c="#4B5563">{job.experience || 'Not specified'}</Text>
-          </Group>
-          <Group gap="xs">
-            <IconMapPin size={14} color="#4B5563" />
-            <Text size="xs" c="#4B5563">{job.workMode || 'Not specified'}</Text>
-          </Group>
-          <Group gap="xs">
-            <IconCurrencyRupee size={14} color="#4B5563" />
-            <Text size="xs" c="#4B5563">{job.salaryRange || job.salary || 'Not specified'}</Text>
-          </Group>
-        </Group>
+      <ul className="mb-4 flex-1 space-y-1 text-[13px] leading-relaxed text-gray-500">
+        {(points.length ? points : ['No description provided.']).map((p, i) => (
+          <li key={i} className="flex gap-2">
+            <span aria-hidden="true" className="text-gray-400">•</span>
+            <span className="line-clamp-2">{p}</span>
+          </li>
+        ))}
+      </ul>
 
-        {/* Description Points */}
-        <Stack gap={8} style={{ flex: 1 }}>
-          {displayPoints.length > 0 ? (
-            displayPoints.map((point, index) => (
-              <Group key={index} gap="xs" align="flex-start">
-                <Text size="xs" c="#4B5563">•</Text>
-                <Text size="xs" c="#4B5563" style={{ flex: 1 }}>
-                  {point}
-                </Text>
-              </Group>
-            ))
-          ) : (
-            <Group gap="xs" align="flex-start">
-              <Text size="xs" c="#4B5563">•</Text>
-              <Text size="xs" c="#4B5563" style={{ flex: 1 }}>
-                No description available
-              </Text>
-            </Group>
-          )}
-        </Stack>
-
-        {/* Apply Button */}
-        <Button
-          fullWidth
-          color="blue"
-          onClick={() => onApply(job.id)}
-          radius="md"
-          size="xs"
-        >
-          Apply Now
-        </Button>
-      </Stack>
-    </Paper>
+      <Button fullWidth radius="md" color="blue" onClick={() => onOpen(job)}>
+        View details
+      </Button>
+    </article>
   );
-} 
+}

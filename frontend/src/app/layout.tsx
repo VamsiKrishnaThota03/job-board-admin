@@ -6,8 +6,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Job Board",
-  description: "Find your next dream job",
+  title: "JobBoard - find and post jobs",
+  description: "Search jobs by title, location, type and salary, and post new openings.",
 };
 
 export default function RootLayout({
@@ -17,9 +17,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-      </head>
       <body className={inter.className}>
         <MantineProvider>{children}</MantineProvider>
       </body>
