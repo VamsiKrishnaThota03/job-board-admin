@@ -1,7 +1,20 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-export type JobType = 'Full-time' | 'Part-time' | 'Contract' | 'Internship';
-export type WorkMode = 'Onsite' | 'Remote' | 'Hybrid';
+export const JOB_TYPES = [
+  'Full-time',
+  'Part-time',
+  'Contract',
+  'Internship',
+] as const;
+export const WORK_MODES = ['Onsite', 'Remote', 'Hybrid'] as const;
+export type JobType = (typeof JOB_TYPES)[number];
+export type WorkMode = (typeof WORK_MODES)[number];
 
 @Entity()
 export class Job {
@@ -19,14 +32,14 @@ export class Job {
 
   @Column({
     type: 'enum',
-    enum: ['Full-time', 'Part-time', 'Contract', 'Internship'],
+    enum: JOB_TYPES,
     default: 'Full-time',
   })
   jobType: JobType;
 
   @Column({
     type: 'enum',
-    enum: ['Onsite', 'Remote', 'Hybrid'],
+    enum: WORK_MODES,
     default: 'Onsite',
   })
   workMode: WorkMode;
@@ -51,4 +64,4 @@ export class Job {
 
   @UpdateDateColumn()
   updatedAt: Date;
-} 
+}

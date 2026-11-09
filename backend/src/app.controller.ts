@@ -5,8 +5,9 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  /** Health check used by Render and the README. */
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getHealth() {
+    return this.appService.getHealth();
   }
 }

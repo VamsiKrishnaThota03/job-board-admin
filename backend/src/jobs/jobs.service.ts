@@ -39,8 +39,8 @@ export class JobsService {
     return this.jobsRepository.save(job);
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<void> {
     const job = await this.findOne(id);
-    return this.jobsRepository.remove(job);
+    await this.jobsRepository.remove(job);
   }
-} 
+}
