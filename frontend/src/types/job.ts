@@ -1,34 +1,38 @@
-export type JobType = 'Full-time' | 'Part-time' | 'Contract' | 'Internship';
-export type WorkMode = 'Onsite' | 'Remote' | 'Hybrid';
+export const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship'] as const;
+export const WORK_MODES = ['Onsite', 'Remote', 'Hybrid'] as const;
+export const LOCATIONS = ['Bangalore', 'Mumbai', 'Delhi', 'Hyderabad', 'Chennai', 'Pune', 'Remote'];
 
+export type JobType = (typeof JOB_TYPES)[number];
+export type WorkMode = (typeof WORK_MODES)[number];
+
+/** A job as returned by the API. `isSample` marks built-in demo listings. */
 export interface Job {
   id: number;
-  companyName: string;
-  companyLogo: string;
   title: string;
-  experience: string;
-  workMode: WorkMode;
-  salary: string;
-  salaryRange: string;
-  description: string;
-  postedTime: string;
+  companyName: string;
   location: string;
   jobType: JobType;
-  applicationDeadline: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  workMode: WorkMode;
+  experience?: string | null;
+  salary?: string | null;
+  salaryRange: string;
+  description: string;
+  applicationDeadline: string;
+  createdAt: string;
+  updatedAt: string;
+  isSample?: boolean;
 }
 
 export interface JobFormData {
   title: string;
   companyName: string;
-  companyLogo?: string;
+  location: string;
+  jobType: JobType;
+  workMode: WorkMode;
   experience?: string;
-  workMode?: WorkMode;
   salary?: string;
   salaryRange: string;
   description: string;
-  location: string;
-  jobType: JobType;
-  applicationDeadline: Date;
-} 
+  /** ISO date string (YYYY-MM-DD or full ISO) */
+  applicationDeadline: string;
+}

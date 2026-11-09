@@ -1,92 +1,68 @@
 'use client';
 
-import { Container, Title, LoadingOverlay } from '@mantine/core';
-import { JobForm } from '@/components/JobForm';
-import { Job, JobFormData } from '@/types/job';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Alert, Paper, Skeleton } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useEffect, useState, use } from 'react';
+import { IconArrowLeft } from '@tabler/icons-react';
+import { Header } from '@/components/Header';
+import { JobForm, fromJob } from '@/components/JobForm';
+import { Job, JobFormData } from '@/types/job';
+import { jobsApi } from '@/services/api';
 
-export default function EditJob({ params }: { params: Promise<{ id: string }> }) {
+export default function EditJobPage() {
   const router = useRouter();
+  const { id } = useParams<{ id: string }>();
+  const jobId = Number(id);
   const [job, setJob] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true);
-  const resolvedParams = use(params);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        // TODO: Implement API call to fetch job
-        // Mock data for now
-        setJob({
-          id: parseInt(resolvedParams.id),
-          title: 'Senior Software Engineer',
-          companyName: 'Tech Corp',
-          location: 'San Francisco, CA',
-          jobType: 'Full-time',
-          salaryRange: '$120,000 - $180,000',
-          description: 'We are looking for a senior software engineer...',
-          requirements: '5+ years of experience...',
-          responsibilities: 'Lead development of core features...',
-          applicationDeadline: new Date('2024-05-01'),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      } catch (error) {
-        notifications.show({
-          title: 'Error',
-          message: 'Failed to fetch job details',
-          color: 'red',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJob();
-  }, [resolvedParams.id]);
+    if (!Number.isInteger(jobId) || jobId <= 0) {
+      setError('Invalid job id');
+      return;
+    }
+    jobsApi
+      .getJobById(jobId)
+      .then(setJob)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load job'));
+  }, [jobId]);
 
   const handleSubmit = async (data: JobFormData) => {
     try {
-      // TODO: Implement API call to update job
-      console.log('Updating job:', data);
-      
-      notifications.show({
-        title: 'Success',
-        message: 'Job posting updated successfully',
-        color: 'green',
-      });
-      
+      await jobsApi.updateJob(jobId, data);
+      notifications.show({ title: 'Job updated', message: data.title, color: 'green' });
       router.push('/');
-    } catch (error) {
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to update job posting',
-        color: 'red',
-      });
+    } catch (e) {
+      notifications.show({ title: 'Could not update job', message: e instanceof Error ? e.message : 'Unexpected error', color: 'red' });
     }
   };
 
-  if (loading) {
-    return (
-      <Container size="md" py="xl" style={{ position: 'relative', minHeight: '400px' }}>
-        <LoadingOverlay visible={true} />
-      </Container>
-    );
-  }
-
-  if (!job) {
-    return (
-      <Container size="md" py="xl">
-        <Title>Job not found</Title>
-      </Container>
-    );
-  }
-
   return (
-    <Container size="md" py="xl">
-      <Title mb="xl">Edit Job Posting</Title>
-      <JobForm initialData={job} onSubmit={handleSubmit} />
-    </Container>
+    <main className="min-h-screen bg-gray-50 pb-16">
+      <Header />
+      <div className="mx-auto mt-8 w-full max-w-3xl px-4">
+        <Link href="/" className="mb-4 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+          <IconArrowLeft size={16} aria-hidden="true" /> Back to jobs
+        </Link>
+        <h1 className="mb-6 text-2xl font-semibold text-gray-900">Edit job posting</h1>
+        <Paper radius="lg" p="xl" withBorder>
+          {error ? (
+            <Alert color="red" title="Job not available">
+              {error}
+            </Alert>
+          ) : !job ? (
+            <div className="space-y-4">
+              <Skeleton height={40} />
+              <Skeleton height={40} />
+              <Skeleton height={120} />
+            </div>
+          ) : (
+            <JobForm initial={fromJob(job)} submitLabel="Save changes" onSubmit={handleSubmit} onCancel={() => router.push('/')} />
+          )}
+        </Paper>
+      </div>
+    </main>
   );
-} 
+}
