@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@mantine/core": "^7.4.1",
+    "@mantine/core": "^9.7.5",
     "@mantine/dates": "^7.4.1",
     "@mantine/hooks": "^7.4.1",
     "@mantine/notifications": "^7.4.1",
