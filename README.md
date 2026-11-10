@@ -11,8 +11,8 @@ A full-stack job board admin built with Next.js 14, Mantine and a NestJS + TypeO
 ![TypeORM](https://img.shields.io/badge/TypeORM-FE0803?logo=typeorm&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 
-[![CI](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/codeql.yml)
+[![CI](https://github.com/VamsiKrishnaThota03/job-board-admin/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/job-board-admin/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/VamsiKrishnaThota03/job-board-admin/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/job-board-admin/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Live demo
@@ -98,7 +98,7 @@ A full-stack job board admin built with Next.js 14, Mantine and a NestJS + TypeO
 ### 1. Clone
 
 ```bash
-git clone https://github.com/VamsiKrishnaThota03/job-management.git
+git clone https://github.com/VamsiKrishnaThota03/job-board-admin.git
 cd job-management
 ```
 
