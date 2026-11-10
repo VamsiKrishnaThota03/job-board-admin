@@ -11,6 +11,10 @@ A full-stack job board admin built with Next.js 14, Mantine and a NestJS + TypeO
 ![TypeORM](https://img.shields.io/badge/TypeORM-FE0803?logo=typeorm&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 
+[![CI](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/job-management/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ## Live demo
 
 <https://job-management-orpin.vercel.app>
@@ -18,6 +22,11 @@ A full-stack job board admin built with Next.js 14, Mantine and a NestJS + TypeO
 | Job board | Create job | Mobile |
 | --- | --- | --- |
 | ![Job board with filters](docs/screenshots/jobs.png) | ![Create job modal](docs/screenshots/create-job.png) | ![Mobile layout](docs/screenshots/mobile.png) |
+
+> **The hosted demo is read-only.** Writes now fail closed (see
+> [Write access](#write-access)), and the bundled frontend has no key to send —
+> by design, since a `NEXT_PUBLIC_*` value is shipped to every browser and so is
+> not a credential. Run it locally to create and edit jobs.
 
 ## Overview
 
@@ -144,11 +153,50 @@ npm run dev
 |-----------|-------------------|----------------------------|
 | backend   | `npm run lint`    | ESLint (with `--fix`)      |
 | backend   | `npm run format`  | Prettier                   |
-| backend   | `npm test`        | Jest unit tests            |
-| backend   | `npm run test:e2e`| API e2e tests (in-memory)  |
+| backend   | `npm test`        | 15 Jest unit tests         |
+| backend   | `npm run test:e2e`| 10 API e2e tests (in-memory repository) |
+| backend   | `npm run test:cov`| Unit tests with coverage   |
 | root      | `npm run dev:backend` / `npm run dev:frontend` | Start either app from the repo root |
 | frontend  | `npm run build`   | Production build           |
 | frontend  | `npm run lint`    | `next lint`                |
+
+## Write access
+
+`GET /jobs` is public. Every write is guarded, and the guard **fails closed**:
+
+| Server configuration | POST / PATCH / DELETE `/jobs` |
+| --- | --- |
+| `ADMIN_API_KEY=<secret>` | Require `x-admin-key: <secret>`; wrong or missing key gives **401** |
+| `ALLOW_PUBLIC_WRITES=true` | Open to anyone (explicit opt-in, logged loudly at startup) |
+| neither | **503**, naming `ADMIN_API_KEY` as the setting to fix |
+
+This replaced a guard that returned `true` whenever `ADMIN_API_KEY` was unset:
+
+```ts
+const expected = process.env.ADMIN_API_KEY;
+if (!expected) return true;   // <- writes open to anyone
+```
+
+Unset was the default, and the deployed instance ran that way, so `POST`,
+`PATCH` and `DELETE /jobs` were accepting requests from anyone who found the
+URL. Note the key comparison is timing-safe (`timingSafeEqual`, with a length
+check first because it throws on a length mismatch) — that part was already
+right; the problem was the branch that skipped it entirely.
+
+`ALLOW_PUBLIC_WRITES` exists because a publicly writable demo is a reasonable
+thing to want for a portfolio piece. The difference is that it is now a
+decision someone typed, under a name that says what it does, rather than the
+silent default — and the startup log states which mode is active, so a
+misconfigured deploy is visible rather than discovered.
+
+Both are deliberately strict: only the exact string `true` enables public
+writes (`1`, `yes` and `TRUE` do not), and an empty `ADMIN_API_KEY` counts as
+*unset* rather than as "a configured empty key" that an empty header would
+match.
+
+Ten e2e tests and a dedicated CI job pin this down, the CI job by booting the
+real server against Postgres and checking an anonymous `POST` gets 503 while
+`GET` still works.
 
 ## API
 
@@ -180,9 +228,44 @@ Job payload:
 
 `experience` and `salary` are optional. All other fields are required.
 
+## Docker
+
+```bash
+printf 'POSTGRES_PASSWORD=%s\nADMIN_API_KEY=%s\n' \
+  "$(openssl rand -hex 16)" "$(openssl rand -hex 24)" > .env
+
+docker compose up --build
+open http://localhost:3001/api-docs
+```
+
+Postgres and the API both publish to `127.0.0.1` only, so neither is reachable
+from your network. Compose fails fast with a named error if either variable is
+missing. The image is multi-stage, runs as the unprivileged `node` user and
+carries no dev dependencies.
+
+## Continuous integration
+
+| Job | What it proves |
+| --- | --- |
+| `backend` (Node 20, 22) | ESLint read-only (the repo's own `lint` script passes `--fix`, which would rewrite files in CI and still pass), Prettier, 15 unit tests, 10 e2e tests, coverage, and `nest build` |
+| `write-access-guard` | Boots the real server against Postgres 16: with nothing configured reads work and an anonymous `POST`/`DELETE` returns 503; with `ADMIN_API_KEY` set, a missing and a wrong key both give 401 and the right key gives 201; Swagger UI is served |
+| `frontend` | `next lint` and a production build |
+| `docker` | The image builds and refuses to start without `DATABASE_URL` |
+
+CodeQL runs weekly and on every push; Dependabot groups weekly patch/minor
+bumps per package.
+
+## API documentation
+
+Swagger UI is served at `/api-docs`, with the `x-admin-key` scheme wired into
+the **Authorize** button so writes can be tried from the browser.
+
 ## Known limitations
 
 - There is no candidate side: "View details" shows the job, but there is no application flow.
-- The API has no user accounts. Writes are open unless `ADMIN_API_KEY` is set, and the bundled frontend cannot send that key.
+- The API has no user accounts — `ADMIN_API_KEY` is a single shared secret, not per-user auth. It is enough to keep the deployed instance from being edited by strangers, but a real multi-user admin would need accounts and roles.
+- The bundled frontend cannot send the admin key, so the hosted demo is read-only. Putting it in a `NEXT_PUBLIC_*` variable would ship it to every visitor's browser, which is not a credential; doing this properly means a server-side route handler holding the key, or real user accounts.
+- Rate limit counters are in process memory, so the 600-per-15-minutes ceiling is per instance.
+- `DB_SYNCHRONIZE` defaults to `true`, so TypeORM alters tables to match the entity on boot. Convenient for a demo; a service with real data wants migrations instead.
 - Filtering and search run in the browser over all jobs; there is no server-side pagination.
 - Locations come from a fixed list in `frontend/src/types/job.ts`.
